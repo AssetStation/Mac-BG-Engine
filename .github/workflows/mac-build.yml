@@ -6,20 +6,29 @@ on:
   workflow_dispatch: # Allows manual run button in GitHub Actions UI
 
 jobs:
-  # ==========================================
-  # 1. INTEL MAC BUILD (x86_64)
-  # ==========================================
+  # =========================================================================
+  # 1. INTEL MAC BUILD (x86_64 compiled via Rosetta on modern Mac runner)
+  # =========================================================================
   build-intel-x86_64:
-    runs-on: macos-13 # 🍏 Dedicated GitHub Intel (x86_64) Runner
+    runs-on: macos-latest # Uses available Apple Silicon runner with Rosetta translation
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Enable Rosetta 2
+      run: |
+        softwareupdate --install-rosetta --agree-to-license || true
+
+    - name: Set up Python (x64)
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
+        architecture: 'x64'
 
-    - name: Install dependencies
+    - name: Verify Architecture
+      run: |
+        python -c "import platform; print('Active Python Machine:', platform.machine(), platform.architecture())"
+
+    - name: Install dependencies (x64)
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
@@ -37,18 +46,19 @@ jobs:
         name: bg_engine_x86_64
         path: dist/bg_engine_x86_64
 
-  # ==========================================
+  # =========================================================================
   # 2. APPLE SILICON BUILD (arm64)
-  # ==========================================
+  # =========================================================================
   build-apple-silicon-arm64:
-    runs-on: macos-14 # 🍏 Dedicated GitHub Apple Silicon (M1/arm64) Runner
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Set up Python (arm64)
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+        architecture: 'arm64'
 
     - name: Install dependencies
       run: |
