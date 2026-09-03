@@ -1,13 +1,16 @@
-name: Build Mac Executable
+name: Build Mac Executables (Intel x86_64 & Apple Silicon)
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch: # Allows manual run button in GitHub Actions UI
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
-
+  # ==========================================
+  # 1. INTEL MAC BUILD (x86_64)
+  # ==========================================
+  build-intel-x86_64:
+    runs-on: macos-13 # 🍏 Dedicated GitHub Intel (x86_64) Runner
     steps:
     - uses: actions/checkout@v4
 
@@ -22,12 +25,45 @@ jobs:
         pip install pyinstaller
         pip install -r requirements.txt
 
-    - name: Compile with PyInstaller
+    - name: Compile Intel Executable
       run: |
-        pyinstaller --onefile bg_engine.py
+        pyinstaller --onefile --name bg_engine_x86_64 bg_engine.py
+        chmod +x dist/bg_engine_x86_64
+        file dist/bg_engine_x86_64 # Prints architecture to verify x86_64
 
-    - name: Upload Mac Executable
+    - name: Upload Intel Mac Executable
       uses: actions/upload-artifact@v4
       with:
-        name: bg_engine_mac
+        name: bg_engine_x86_64
+        path: dist/bg_engine_x86_64
+
+  # ==========================================
+  # 2. APPLE SILICON BUILD (arm64)
+  # ==========================================
+  build-apple-silicon-arm64:
+    runs-on: macos-14 # 🍏 Dedicated GitHub Apple Silicon (M1/arm64) Runner
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+
+    - name: Compile Apple Silicon Executable
+      run: |
+        pyinstaller --onefile --name bg_engine bg_engine.py
+        chmod +x dist/bg_engine
+        file dist/bg_engine # Prints architecture to verify arm64
+
+    - name: Upload Apple Silicon Executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: bg_engine_arm64
         path: dist/bg_engine
