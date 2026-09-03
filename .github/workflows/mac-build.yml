@@ -26,19 +26,20 @@ jobs:
 
     - name: Verify Architecture
       run: |
-        python -c "import platform; print('Active Python Machine:', platform.machine(), platform.architecture())"
+        arch -x86_64 python -c "import platform; print('Active Python Machine:', platform.machine(), platform.architecture())"
 
     - name: Install dependencies (x64)
       run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller
-        pip install -r requirements.txt
+        arch -x86_64 python -m pip install --upgrade pip
+        arch -x86_64 python -m pip install pyinstaller
+        arch -x86_64 python -m pip install -r requirements.txt
 
     - name: Compile Intel Executable
       run: |
-        pyinstaller --onefile --name bg_engine_x86_64 bg_engine.py
+        # Use arch -x86_64 and --target-arch x86_64 to force true Intel Mach-O compilation
+        arch -x86_64 pyinstaller --target-arch x86_64 --onefile --name bg_engine_x86_64 bg_engine.py
         chmod +x dist/bg_engine_x86_64
-        file dist/bg_engine_x86_64 # Prints architecture to verify x86_64
+        file dist/bg_engine_x86_64 # Prints architecture (MUST show: Mach-O 64-bit executable x86_64)
 
     - name: Upload Intel Mac Executable
       uses: actions/upload-artifact@v4
@@ -68,9 +69,9 @@ jobs:
 
     - name: Compile Apple Silicon Executable
       run: |
-        pyinstaller --onefile --name bg_engine bg_engine.py
+        pyinstaller --target-arch arm64 --onefile --name bg_engine bg_engine.py
         chmod +x dist/bg_engine
-        file dist/bg_engine # Prints architecture to verify arm64
+        file dist/bg_engine # Prints architecture (MUST show: Mach-O 64-bit executable arm64)
 
     - name: Upload Apple Silicon Executable
       uses: actions/upload-artifact@v4
