@@ -39,6 +39,7 @@ jobs:
         # Use arch -x86_64 and --target-arch x86_64 to force true Intel Mach-O compilation
         arch -x86_64 pyinstaller --target-arch x86_64 --onefile --name bg_engine_x86_64 bg_engine.py
         chmod +x dist/bg_engine_x86_64
+        codesign --force -s - dist/bg_engine_x86_64 || true
         file dist/bg_engine_x86_64 # Prints architecture (MUST show: Mach-O 64-bit executable x86_64)
 
     - name: Upload Intel Mac Executable
@@ -71,6 +72,7 @@ jobs:
       run: |
         pyinstaller --target-arch arm64 --onefile --name bg_engine bg_engine.py
         chmod +x dist/bg_engine
+        codesign --force -s - dist/bg_engine || true
         file dist/bg_engine # Prints architecture (MUST show: Mach-O 64-bit executable arm64)
 
     - name: Upload Apple Silicon Executable
